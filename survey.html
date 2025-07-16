@@ -1,0 +1,170 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hair Product Feedback Survey</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: bold;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            display: block;
+            margin: 20px auto;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Hair Product Feedback Survey</h1>
+    <div>
+        <label for="curlType">What is your curl pattern?</label>
+        <select id="curlType" name="curlType" required>
+            <option value="">Select Curl Pattern</option>
+            <option value="2A">2A (Wavy)</option>
+            <option value="2B">2B (Wavy)</option>
+            <option value="2C">2C (Wavy)</option>
+            <option value="3A">3A (Curly)</option>
+            <option value="3B">3B (Curly)</option>
+            <option value="3C">3C (Curly)</option>
+            <option value="4A">4A (Coily)</option>
+            <option value="4B">4B (Coily)</option>
+            <option value="4C">4C (Coily)</option>
+        </select>
+
+        <label for="gender">Gender</label>
+        <select id="gender" name="gender" required>
+            <option value="">Select Gender</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="other">Other</option>
+        </select>
+
+        <label for="product">Which product did you try?</label>
+        <select id="product" name="product" required>
+            <option value="">Select Product</option>
+            <option value="hairCream">Hair Cream</option>
+            <option value="hairGel">Hair Gel</option>
+        </select>
+
+        <label for="routine">Describe your current hair care routine (e.g., wash frequency, products used):</label>
+        <textarea id="routine" name="routine" rows="4" required></textarea>
+
+        <label for="effectiveness">How effective was the product for your hair? (1 = Not Effective, 5 = Very Effective)</label>
+        <select id="effectiveness" name="effectiveness" required>
+            <option value="">Select Rating</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+        </select>
+
+        <label for="texture">How did you like the texture of the product?</label>
+        <textarea id="texture" name="texture" rows="3" required></textarea>
+
+        <label for="improvements">What improvements would you suggest for the product?</label>
+        <textarea id="improvements" name="improvements" rows="4"></textarea>
+
+        <button onclick="submitSurvey()">Submit Feedback</button>
+    </div>
+
+    <script>
+        function submitSurvey() {
+            const curlType = document.getElementById('curlType').value;
+            const gender = document.getElementById('gender').value;
+            const product = document.getElementById('product').value;
+            const routine = document.getElementById('routine').value;
+            const effectiveness = document.getElementById('effectiveness').value;
+            const texture = document.getElementById('texture').value;
+            const improvements = document.getElementById('improvements').value;
+
+            if (!curlType || !gender || !product || !routine || !effectiveness || !texture) {
+                alert('Please fill out all required fields.');
+                return;
+            }
+
+            // Simulate form submission (replace with actual backend endpoint)
+            console.log({
+                curlType,
+                gender,
+                product,
+                routine,
+                effectiveness,
+                texture,
+                improvements
+            });
+
+            alert('Thank you for your feedback!');
+            document.querySelector('div').reset();
+        }
+    </script>
+</body>
+</html>
